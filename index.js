@@ -1,4 +1,4 @@
-// ✅ Telegram Video Downloader Bot
+// ✅ Telegram Video Downloader Bot (Vercel Fixed Version)
 // 💬 Credit: @dexter_xxmorgan
 // 📢 Join Channels:
 //    🔹 https://t.me/freefirelkies
@@ -38,9 +38,12 @@ async function sendStartMessage(chatId) {
 
 // Handle messages
 app.post("/api/bot", async (req, res) => {
+  console.log("📩 Incoming update:", JSON.stringify(req.body, null, 2)); // log incoming data
+  res.send("ok"); // Always reply OK immediately to Telegram
+
   try {
     const message = req.body.message;
-    if (!message || !message.chat) return res.sendStatus(200);
+    if (!message || !message.chat) return;
 
     const chatId = message.chat.id;
     const text = message.text?.trim();
@@ -48,7 +51,7 @@ app.post("/api/bot", async (req, res) => {
     // /start command
     if (text === "/start") {
       await sendStartMessage(chatId);
-      return res.sendStatus(200);
+      return;
     }
 
     // URL check
@@ -61,7 +64,7 @@ app.post("/api/bot", async (req, res) => {
           text: "❌ Please send a valid video link.",
         }),
       });
-      return res.sendStatus(200);
+      return;
     }
 
     // Notify downloading
@@ -75,7 +78,7 @@ app.post("/api/bot", async (req, res) => {
     });
 
     // Fetch from API
-    const response = await fetch(API_URL + text);
+    const response = await fetch(API_URL + encodeURIComponent(text));
     const data = await response.json();
 
     if (data.url) {
@@ -98,11 +101,8 @@ app.post("/api/bot", async (req, res) => {
         }),
       });
     }
-
-    res.sendStatus(200);
   } catch (err) {
-    console.error("Error:", err);
-    res.sendStatus(500);
+    console.error("❌ Error handling message:", err);
   }
 });
 
@@ -111,4 +111,4 @@ app.get("/", (req, res) => {
   res.send("🤖 Telegram Video Downloader Bot by @dexter_xxmorgan is running!");
 });
 
-app.listen(3000, () => console.log("Bot server running on port 3000"));
+app.listen(3000, () => console.log("🚀 Bot server running on port 3000"));
